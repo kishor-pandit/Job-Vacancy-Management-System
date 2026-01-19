@@ -64,6 +64,139 @@ $page_title = 'View Applicants - Job Vacancy Management System';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $page_title; ?></title>
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/style.css">
+    <style>
+        .applicants-list table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            margin-top: 20px;
+        }
+        .applicants-list th,
+        .applicants-list td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .applicants-list th {
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+        }
+        .applicants-list tr:hover {
+            background-color: #f5f5f5;
+        }
+        .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .actions form {
+            margin: 0;
+        }
+        .view-letter-btn {
+            background-color: #17a2b8;
+            color: white;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .view-letter-btn:hover {
+            background-color: #138496;
+        }
+        .status-pending {
+            color: #ffc107;
+            font-weight: bold;
+        }
+        .status-approved {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .status-rejected {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        .modal.show {
+            display: block;
+        }
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 700px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 15px;
+        }
+        .modal-header h2 {
+            margin: 0;
+            color: #007bff;
+        }
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #999;
+        }
+        .close-btn:hover {
+            color: #333;
+        }
+        .letter-content {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 4px;
+            line-height: 1.6;
+            color: #333;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .applicant-info {
+            background-color: #e7f3ff;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007bff;
+        }
+        .applicant-info p {
+            margin: 8px 0;
+        }
+        .back-link {
+            margin-bottom: 20px;
+        }
+        .back-link a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
     <?php require_once '../includes/header.php'; ?>
@@ -101,6 +234,8 @@ $page_title = 'View Applicants - Job Vacancy Management System';
                                     <?php echo ucfirst(htmlspecialchars($applicant['status'])); ?>
                                 </td>
                                 <td class="actions">
+                                    <button class="view-letter-btn" onclick="openModal('modal-<?php echo $applicant['id']; ?>')">View Letter</button>
+                                    
                                     <?php if ($applicant['status'] == 'pending'): ?>
                                         <form method="POST" style="display: inline;">
                                             <input type="hidden" name="application_id" value="<?php echo $applicant['id']; ?>">
@@ -117,6 +252,28 @@ $page_title = 'View Applicants - Job Vacancy Management System';
                                     <?php endif; ?>
                                 </td>
                             </tr>
+                            
+                            <!-- Modal for Cover Letter -->
+                            <div id="modal-<?php echo $applicant['id']; ?>" class="modal">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h2>Cover Letter</h2>
+                                        <button class="close-btn" onclick="closeModal('modal-<?php echo $applicant['id']; ?>')">&times;</button>
+                                    </div>
+                                    
+                                    <div class="applicant-info">
+                                        <p><strong>Applicant:</strong> <?php echo htmlspecialchars($applicant['name']); ?></p>
+                                        <p><strong>Email:</strong> <?php echo htmlspecialchars($applicant['email']); ?></p>
+                                        <p><strong>Phone:</strong> <?php echo htmlspecialchars($applicant['phone'] ?? 'Not provided'); ?></p>
+                                        <p><strong>Applied Date:</strong> <?php echo date('M d, Y H:i', strtotime($applicant['applied_at'])); ?></p>
+                                    </div>
+                                    
+                                    <h3>Cover Letter:</h3>
+                                    <div class="letter-content">
+                                        <?php echo htmlspecialchars($applicant['cover_letter'] ?: 'No cover letter provided'); ?>
+                                    </div>
+                                </div>
+                            </div>
                         <?php endwhile; ?>
                     </tbody>
                 </table>
@@ -125,6 +282,23 @@ $page_title = 'View Applicants - Job Vacancy Management System';
             <p>No applicants for this job yet.</p>
         <?php endif; ?>
     </main>
+    
+    <script>
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('show');
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+        
+        // Close modal when clicking outside the content
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('show');
+            }
+        }
+    </script>
     
     <?php require_once '../includes/footer.php'; ?>
 </body>
