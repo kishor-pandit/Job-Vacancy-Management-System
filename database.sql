@@ -4,13 +4,14 @@
 CREATE DATABASE IF NOT EXISTS job_vacancy_system;
 USE job_vacancy_system;
 
--- Users Table (Employees and Employers)
+-- Users Table (Employees, Employers, and Admins)
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
-    role ENUM('employee', 'employer') NOT NULL,
+    role ENUM('employee', 'employer', 'admin') NOT NULL,
+    username VARCHAR(50) UNIQUE,
     phone VARCHAR(15),
     address TEXT,
     city VARCHAR(50),

@@ -30,8 +30,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 // Redirect based on role
                 if ($user['role'] == 'employee') {
                     header("Location: employee/dashboard.php");
-                } else {
+                } elseif ($user['role'] == 'employer') {
                     header("Location: employer/dashboard.php");
+                } elseif ($user['role'] == 'admin') {
+                    header("Location: admin/dashboard.php");
                 }
                 exit();
             } else {
