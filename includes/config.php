@@ -20,6 +20,6 @@ $conn->set_charset("utf8");
 session_start();
 
 // Base URL
-define('BASE_URL', 'http://localhost/Job Vacancy Management System/');
+define('BASE_URL', 'http://localhost/job%20MGMT/');
 
 ?>
